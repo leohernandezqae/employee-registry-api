@@ -1,0 +1,8 @@
+bin/
+obj/
+*.user
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.env
+appsettings.*.local.json

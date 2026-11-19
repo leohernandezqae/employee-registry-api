@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-registry-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employee-registry-api
+  template:
+    metadata:
+      labels:
+        app: employee-registry-api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/leohernandezqae/employee-registry-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_URLS
+              value: http://+:8080
+            - name: ConnectionStrings__Sqlite
+              value: Data Source=/data/employee-registry.sqlite
+            - name: Jwt__Key
+              valueFrom:
+                secretKeyRef:
+                  name: employee-registry-api
+                  key: jwt-key
+            - name: Admin__Password
+              valueFrom:
+                secretKeyRef:
+                  name: employee-registry-api
+                  key: admin-password
+            - name: Viewer__Password
+              valueFrom:
+                secretKeyRef:
+                  name: employee-registry-api
+                  key: viewer-password
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: employee-registry-api
